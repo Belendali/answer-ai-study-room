@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=375, initial-scale=1">
+<title>Answer AI – Study Group</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&family=Poppins:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a2e; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 40px 20px; font-family: -apple-system, 'SF Pro Display', 'SF Pro Text', sans-serif; }
+
+  .phone {
+    width: 375px;
+    height: 812px;
+    border-radius: 44px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.08);
+    flex-shrink: 0;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    width: 375px;
+    height: 812px;
+    display: none;
+  }
+  .screen.active { display: block; }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px 0;
+    z-index: 100;
+  }
+  .status-time { font-size: 15px; font-weight: 600; color: #fff; }
+  .status-icons { display: flex; align-items: center; gap: 6px; }
+  .battery-border {
+    width: 22px; height: 11.3px;
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 2.7px;
+    position: relative;
+    display: flex; align-items: center; padding: 1.3px;
+  }
+  .battery-border::after {
+    content: '';
+    position: absolute; right: -3.3px; top: 50%; transform: translateY(-50%);
+    width: 1.3px; height: 4px;
+    background: rgba(255,255,255,.4); border-radius: 1px;
+  }
+  .battery-fill { width: 100%; height: 100%; background: #fff; border-radius: 1.3px; }
+
+  /* ── HOME INDICATOR ── */
+  .home-ind {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 34px;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  .home-ind::before {
+    content: '';
+    width: 134px; height: 5px;
+    background: #fff; border-radius: 100px; opacity: .3;
+  }
+
+  /* ════════════════════════════
+     SCREEN 1 – LEARNING HUB
+  ════════════════════════════ */
+  #s1 { background: #161616; }
+
+  .s1-nav {
+    position: absolute;
+    top: 44px; left: 0; right: 0;
+    height: 44px;
+    display: flex; align-items: flex-end;
+    padding: 0 12px 8px;
+  }
+  .s1-nav-title { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -.3px; }
+
+  .s1-banner {
+    position: absolute;
+    top: 96px; left: 16px;
+    width: 343px; height: 148px;
+    background: #212121;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+  }
+  .s1-banner-text {
+    font-size: 20px; font-weight: 510; color: #fff;
+    width: 183px; line-height: 1.35;
+    flex-shrink: 0;
+  }
+  .s1-mascot {
+    width: 100px; height: 125px;
+    object-fit: contain;
+    flex-shrink: 0;
+    align-self: flex-end;
+  }
+
+  .s1-tiles {
+    position: absolute;
+    top: 260px; left: 21px;
+    width: 333px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .tile-full {
+    width: 333px; height: 118px;
+    border-radius: 18px;
+    background: #7637f6;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .tile-full:active { opacity: .88; }
+  .tile-classroom-bg {
+    position: absolute;
+    right: 0; top: 0;
+    width: 204px; height: 148px;
+    object-fit: cover;
+    object-position: bottom;
+    mix-blend-mode: hard-light;
+    opacity: .3;
+    border-radius: 18px;
+  }
+  .tile-avatar-ring {
+    position: absolute;
+    top: 12px; left: 10px;
+    width: 60px; height: 60px;
+  }
+  .tile-label {
+    position: absolute;
+    bottom: 12px; left: 10px;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+
+  .tile-row { display: flex; gap: 17px; }
+  .tile-half {
+    width: 158px; height: 118px;
+    border-radius: 18px;
+    position: relative; overflow: hidden;
+    cursor: pointer;
+  }
+  .tile-half:active { opacity: .88; }
+  .tile-half-bg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    border-radius: 18px;
+  }
+  .tile-half-icon {
+    position: absolute;
+    top: 12px; left: 10px;
+    width: 60px; height: 60px;
+    object-fit: contain;
+  }
+  .tile-half-label {
+    position: absolute;
+    bottom: 12px; left: 10px;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+
+  .tab-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 86px;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, #000 100%), #161616;
+    display: flex; align-items: flex-start;
+    padding-top: 10px;
+  }
+  .tab-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    height: 44px; cursor: pointer;
+  }
+  .tab-item img { width: 44px; height: 44px; object-fit: contain; }
+  .tab-active-bar {
+    position: absolute;
+    top: 10px;
+    width: 18px; height: 2px;
+    background: #fff; border-radius: 2px;
+  }
+
+  /* ════════════════════════════
+     SCREEN 2 – STUDY ROOM (room picker)
+  ════════════════════════════ */
+  #s2 { background: #161616; }
+
+  .s2-nav {
+    position: absolute;
+    top: 44px; left: 0; right: 0;
+    height: 44px;
+    display: flex; align-items: center;
+    padding: 0 16px;
+  }
+  .s2-back { width: 24px; height: 24px; cursor: pointer; }
+  .s2-title { font-size: 22px; font-weight: 700; color: #fff; margin-left: 10px; }
+
+  .s2-stat-row {
+    position: absolute;
+    top: 109px; left: 12px; right: 12px;
+    display: flex; gap: 15px;
+  }
+  .s2-stat {
+    flex: 1; background: rgba(255,255,255,.06);
+    border-radius: 16px; padding: 8px 16px;
+    height: 65px;
+  }
+  .s2-stat-label { font-size: 14px; color: #fff; opacity: .9; margin-bottom: 8px; }
+  .s2-stat-value { font-size: 20px; font-weight: 860; color: #c3a5ff; }
+  .s2-stat-unit { font-size: 14px; font-weight: 510; color: rgba(255,255,255,.6); margin-left: 4px; }
+
+  .s2-section-label {
+    position: absolute;
+    top: 205px; left: 12px;
+    font-size: 19px; font-weight: 600; color: #fff;
+  }
+
+  /* big centered carousel — active card 306, side cards 280 (scaled) */
+  .s2-rooms-scroll {
+    position: absolute;
+    top: 278px; left: 0; right: 0;
+    display: flex; gap: 16px;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding: 0 35px;
+    cursor: grab;
+  }
+  .s2-rooms-scroll:active { cursor: grabbing; }
+  .s2-rooms-scroll::-webkit-scrollbar { display: none; }
+  .room-card {
+    width: 306px; height: 306px;
+    border-radius: 28px; flex-shrink: 0;
+    position: relative; overflow: hidden;
+    cursor: pointer;
+    scroll-snap-align: center;
+    transform: scale(.915);
+    transition: transform .25s;
+  }
+  .room-card.active { transform: scale(1); }
+  .room-card video {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+    pointer-events: none;
+  }
+
+  .s2-room-name {
+    position: absolute;
+    top: 600px; left: 0; width: 375px;
+    text-align: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+  .s2-room-meta {
+    position: absolute;
+    top: 623px; left: 0; width: 375px;
+    text-align: center;
+    font-size: 12px; color: rgba(255,255,255,.55);
+  }
+
+  .s2-dots {
+    position: absolute;
+    top: 668px; left: 0; width: 375px;
+    display: flex; justify-content: center; gap: 4px;
+  }
+  .s2-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.25);
+    transition: background .2s;
+  }
+  .s2-dot.active { background: #fff; }
+
+  .s2-enter-btn {
+    position: absolute;
+    bottom: 34px; left: 20px; right: 20px;
+    height: 52px;
+    background: #6216ff;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 16px; cursor: pointer;
+    font-size: 18px; font-weight: 700; color: #fff;
+  }
+  .s2-enter-btn:active { opacity: .85; }
+  .s2-enter-btn img { width: 24px; height: 24px; }
+
+  /* ════════════════════════════
+     SCREEN 3 – STUDY ROOM (in-room)
+  ════════════════════════════ */
+  #s3 { background: #161616; }
+
+  .s3-world { position: absolute; inset: 0; }
+
+  /* blur veil over the room while choosing duration — a backdrop-filter
+     overlay, because filtering the video's ancestor breaks compositing */
+  .s3-blur-veil {
+    position: absolute; inset: 0;
+    z-index: 30;
+    backdrop-filter: blur(16px) brightness(.78);
+    -webkit-backdrop-filter: blur(16px) brightness(.78);
+    display: none;
+  }
+  #s3.choosing .s3-blur-veil { display: block; }
+
+  /* Room video sits exactly where Figma puts the room still: 375x667 at y=-82.
+     Keeping that framing means every seat/tag coordinate from the design file
+     maps 1:1 onto the screen. */
+  .s3-bg {
+    position: absolute;
+    top: -82px; left: 0;
+    width: 375px; height: 667px;
+    object-fit: cover;
+    z-index: 0;
+  }
+
+  /* empty-seat overlay — fades in over the video when someone leaves */
+  .seat-blank {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 5;
+    transition: opacity .7s ease;
+  }
+  .seat-blank.gone { opacity: 1; }
+  /* alignment mode: show every seat patch so positions can be eyeballed */
+  #s3.align-seats .seat-blank { opacity: 1; }
+
+  .avatar-tag {
+    position: absolute;
+    background: rgba(0,0,0,.5);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 16px;
+    padding: 4px 8px;
+    display: flex; align-items: center; gap: 6px;
+    z-index: 10;
+    cursor: pointer;
+    animation: tagFloat 3.2s ease-in-out infinite;
+    transition: opacity .45s ease;
+  }
+  /* leaving: drop the float animation so the fade-out isn't fought by it */
+  .avatar-tag.left-room {
+    opacity: 0;
+    animation: none;
+    transform: translateY(-6px);
+    pointer-events: none;
+  }
+  .avatar-name { font-size: 14px; color: #fff; white-space: nowrap; }
+  .avatar-flag { font-size: 12px; line-height: 1; }
+  .avatar-time {
+    background: #3b1a7e;
+    border-radius: 16px; padding: 4px 10px;
+    font-size: 14px; color: #fff; white-space: nowrap;
+  }
+  .avatar-tag.bella { background: rgba(255,255,255,.5); }
+  .avatar-tag.bella .avatar-name { color: #000; font-weight: 510; }
+  .avatar-tag.bella .avatar-time { background: #130f1b; }
+
+  @keyframes tagFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  /* back arrow (only while choosing duration) */
+  .s3-back {
+    position: absolute;
+    top: 53px; left: 12px;
+    width: 24px; height: 24px;
+    cursor: pointer;
+    z-index: 45;
+    display: none;
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,.6));
+  }
+  #s3.choosing .s3-back { display: block; }
+
+  /* activity feed (bottom-left over the room) */
+  .s3-feed {
+    position: absolute;
+    left: 7px; right: 16px;
+    top: 465px;
+    z-index: 12;
+    display: flex; flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    pointer-events: none;
+  }
+  .s3-feed div {
+    font-size: 12px; color: #fff;
+    background: rgba(0,0,0,.35);
+    border-radius: 17px;
+    padding: 10px;
+    line-height: 14px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%;
+    transition: opacity .5s;
+  }
+
+  .s3-dark-overlay {
+    position: absolute;
+    top: 565px; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(to bottom, transparent 0%, #161616 32px);
+    z-index: 10;
+    pointer-events: none;
+  }
+  .s3-timer {
+    position: absolute;
+    top: 602px; left: 34px;
+    width: 100px; height: 100px;
+    z-index: 20;
+  }
+  .s3-timer img { width: 100%; height: 100%; object-fit: contain; }
+  .s3-timer-text {
+    position: absolute;
+    top: 635px; left: 60px;
+    width: 47px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    z-index: 21;
+  }
+  .s3-timer-mins { font-size: 16px; font-weight: 700; color: #df9aff; line-height: 1.2; }
+  .s3-timer-left { font-size: 12px; color: #df9aff; line-height: 1.2; }
+  .s3-focus-label {
+    position: absolute;
+    top: 628px; left: 157px; width: 177px;
+    font-size: 18px; color: #fff;
+    z-index: 20;
+  }
+  .s3-focus-sub {
+    position: absolute;
+    top: 662px; left: 157px;
+    font-size: 14px; color: rgba(255,255,255,.6);
+    display: flex; gap: 10px;
+    white-space: nowrap;
+    z-index: 20;
+  }
+  .s3-giveup {
+    position: absolute;
+    top: 729px; left: 20px;
+    width: 127px; height: 49px;
+    background: #4b4b4c; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700;
+    color: rgba(255,255,255,.8); cursor: pointer;
+    z-index: 20;
+  }
+  .s3-done {
+    position: absolute;
+    top: 729px; left: 155px; right: 20px;
+    height: 49px;
+    background: #6216ff; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff; cursor: pointer;
+    z-index: 20;
+  }
+  .s3-giveup:active, .s3-done:active { opacity: .85; }
+
+  /* focusing-only chrome hidden while choosing */
+  #s3.choosing .s3-dark-overlay,
+  #s3.choosing .s3-timer,
+  #s3.choosing .s3-timer-text,
+  #s3.choosing .s3-focus-label,
+  #s3.choosing .s3-focus-sub,
+  #s3.choosing .s3-giveup,
+  #s3.choosing .s3-done,
+  #s3.choosing .s3-feed { display: none; }
+
+  /* ── FOCUS DURATION SHEET ── */
+  .s3-sheet {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: #1d1d1f;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 16px 46px;
+    z-index: 44;
+    display: none;
+    /* own compositing layer — otherwise the blurred video layer paints over the sheet */
+    transform: translateZ(0);
+    animation: sheetUp .32s ease-out;
+  }
+  #s3.choosing .s3-sheet { display: block; }
+  @keyframes sheetUp {
+    from { transform: translateY(80px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .sheet-label { font-size: 14px; color: #fff; margin-bottom: 16px; }
+  .sheet-dur-row { display: flex; gap: 12px; }
+  .dur-card {
+    flex: 1; background: rgba(255,255,255,.05);
+    border-radius: 16px; padding: 16px 8px;
+    text-align: center; color: #fff; cursor: pointer;
+    border: 1px solid transparent;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+  }
+  .dur-card.sel {
+    background: rgba(130,85,224,.3);
+    border-color: #6216ff;
+  }
+  .dur-emoji { font-size: 24px; }
+  .dur-mins { font-size: 16px; font-weight: 510; }
+  .dur-mins span { font-size: 14px; font-weight: 400; }
+  .dur-name { font-size: 14px; font-weight: 275; color: #fff; }
+
+  .sheet-custom {
+    margin-top: 16px;
+    background: rgba(255,255,255,.05);
+    border-radius: 16px; padding: 16px;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; color: rgba(255,255,255,.6);
+  }
+  .sheet-custom input {
+    flex: 1;
+    background: transparent; border: none; outline: none;
+    font-size: 14px; color: #fff;
+    font-family: inherit;
+  }
+  .sheet-custom input::placeholder { color: rgba(255,255,255,.6); }
+
+  .sheet-name-label { margin-top: 20px; font-size: 14px; color: #fff; }
+  .sheet-name-field {
+    margin-top: 12px; width: 100%;
+    background: rgba(255,255,255,.05);
+    border-radius: 16px; padding: 16px;
+    font-size: 14px; color: #fff;
+    border: none; outline: none;
+    font-family: inherit;
+    display: block;
+  }
+  .sheet-start-btn {
+    margin-top: 22px;
+    height: 52px;
+    background: #6216ff;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+  .sheet-start-btn:active { opacity: .85; }
+
+  /* ── GIVE UP POPUP ── */
+  .s3-popup-layer {
+    position: absolute; inset: 0;
+    z-index: 50;
+    display: none;
+    /* own compositing layer — see .s3-sheet */
+    transform: translateZ(0);
+  }
+  .s3-popup-layer.show { display: block; }
+  .s3-popup-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,.55);
+  }
+  .s3-popup-sheet {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 280px;
+    background: #2c2c2e;
+    border-radius: 24px 24px 0 0;
+    animation: sheetUp .28s ease-out;
+  }
+  .s3-popup-mascot {
+    position: absolute;
+    top: 499px; left: 138px;
+    width: 100px; height: 99px;
+    object-fit: contain;
+    animation: mascotPeek .4s ease-out;
+  }
+  @keyframes mascotPeek {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .s3-popup-title {
+    position: absolute;
+    top: 626px; left: 20px; width: 335px;
+    text-align: center;
+    font-size: 20px; font-weight: 700; color: #fff;
+  }
+  .s3-popup-sub {
+    position: absolute;
+    top: 666px; left: 20px; width: 335px;
+    text-align: center;
+    font-size: 16px; color: #b18cff;
+  }
+  .s3-popup-btns {
+    position: absolute;
+    top: 720px; left: 20px; right: 20px;
+    display: flex; gap: 15px;
+  }
+  .s3-popup-btn {
+    flex: 1; height: 48px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+  .s3-popup-btn:active { opacity: .85; }
+  .s3-popup-keep { background: #4b4b4c; }
+  .s3-popup-quit { background: #6216ff; }
+
+  /* ════════════════════════════
+     SCREEN 4 – SESSION COMPLETE
+  ════════════════════════════ */
+  #s4 { background: #0c0c0c; }
+
+  .s4-celebration {
+    position: absolute;
+    top: 44px; left: 0;
+    width: 373px; height: 373px;
+    object-fit: cover;
+    z-index: 0;
+  }
+  .s4-shadow {
+    position: absolute;
+    top: 325px; left: 50%; transform: translateX(-50%);
+    width: 200px; height: 8px;
+    background: #444; border-radius: 10px;
+    z-index: 2;
+  }
+  .s4-chars {
+    position: absolute;
+    top: 176px; left: 72px;
+    width: 232px; height: 163px;
+    object-fit: contain;
+    z-index: 3;
+  }
+
+  .s4-text {
+    position: absolute;
+    top: 366px; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    z-index: 5; width: 304px;
+    text-align: center;
+  }
+  .s4-title {
+    font-family: 'Baloo 2', 'Baloo', cursive, sans-serif;
+    font-size: 32px; font-weight: 700; color: #fff;
+    text-transform: uppercase; line-height: 40px;
+    width: 304px;
+  }
+  .s4-sub {
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px; font-weight: 500;
+    color: rgba(255,255,255,.8);
+    white-space: nowrap;
+  }
+
+  .s4-stats {
+    position: absolute;
+    top: 540px; left: 20px; right: 20px;
+    display: flex; gap: 15px;
+    z-index: 5;
+  }
+  .s4-stat-box { flex: 1; border-radius: 16px; overflow: hidden; }
+  .s4-stat-header {
+    height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+  .s4-stat-value {
+    height: 64px;
+    background: #2f2f2f;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px; font-weight: 700; color: #fff;
+  }
+
+  .s4-exit {
+    position: absolute;
+    top: 729px; left: 20px; right: 20px;
+    height: 49px;
+    background: #6216ff; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff; cursor: pointer;
+    z-index: 5;
+  }
+  .s4-exit:active { opacity: .85; }
+
+  /* ── AWARDS OVERLAY ── */
+  .awards {
+    position: absolute; inset: 0;
+    z-index: 50;
+    background: rgba(10,10,10,.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: none;
+    /* own compositing layer — see .s3-sheet */
+    transform: translateZ(0);
+  }
+  .awards.show { display: block; animation: awardFade .4s ease-out; }
+  @keyframes awardFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .awards-title {
+    position: absolute;
+    top: 144px; left: 0; width: 375px;
+    text-align: center;
+    font-family: 'Baloo 2', cursive, sans-serif;
+    font-size: 30px; font-weight: 700; color: #fff;
+  }
+  .awards-sub {
+    position: absolute;
+    top: 196px; left: 0; width: 375px;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px; font-weight: 500; color: #fff;
+  }
+  .awards-rays {
+    position: absolute;
+    top: 195px; left: 0;
+    width: 375px; height: 375px;
+    background: repeating-conic-gradient(from -8deg, rgba(255,255,255,.13) 0deg 16deg, transparent 16deg 45deg);
+    -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 68%);
+    mask-image: radial-gradient(circle, #000 0%, transparent 68%);
+    animation: raysSpin 30s linear infinite;
+  }
+  @keyframes raysSpin {
+    to { transform: rotate(360deg); }
+  }
+  .awards-item {
+    position: absolute;
+    top: 330px; left: 50%;
+    transform: translateX(-50%);
+    object-fit: contain;
+    animation: itemPop .5s cubic-bezier(.2,1.6,.45,1);
+    filter: drop-shadow(0 12px 40px rgba(140,220,255,.25));
+  }
+  @keyframes itemPop {
+    from { transform: translateX(-50%) scale(.4); opacity: 0; }
+    to { transform: translateX(-50%) scale(1); opacity: 1; }
+  }
+  .awards-name {
+    position: absolute;
+    top: 515px; left: 0; width: 375px;
+    text-align: center;
+    font-family: 'Baloo 2', cursive, sans-serif;
+    font-size: 30px; font-weight: 700; color: #fff;
+  }
+  .awards-thanks {
+    position: absolute;
+    top: 602px; left: 50%; transform: translateX(-50%);
+    width: 160px; height: 51px;
+    background: #6216ff; border-radius: 100px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+    cursor: pointer;
+  }
+  .awards-thanks:active { opacity: .85; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+
+  <!-- ══════════════════════════
+       SCREEN 1 · LEARNING HUB
+  ══════════════════════════ -->
+  <div id="s1" class="screen active">
+    <div style="position:absolute;inset:0;background:#161616"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="white"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2.5C5.5 2.5 3.2 3.5 1.5 5.2L0 3.7C2.1 1.4 5 0 8 0s5.9 1.4 8 3.7L14.5 5.2C12.8 3.5 10.5 2.5 8 2.5z"/><path d="M8 6C6.3 6 4.8 6.7 3.7 7.8L2.2 6.3C3.7 4.9 5.7 4 8 4s4.3.9 5.8 2.3L12.3 7.8C11.2 6.7 9.7 6 8 6z"/><circle cx="8" cy="11" r="1.5"/></svg>
+        <div class="battery-border"><div class="battery-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="s1-nav"><span class="s1-nav-title">Learning Hub</span></div>
+
+    <div class="s1-banner">
+      <span class="s1-banner-text">Explore powerful tools to help you learn smarter.</span>
+      <img class="s1-mascot" src="assets/mascot.gif" alt="mascot">
+    </div>
+
+    <div class="s1-tiles">
+      <div class="tile-full" onclick="show('s2')">
+        <img class="tile-classroom-bg" src="assets/classroom-bg.png" alt="">
+        <img class="tile-avatar-ring" src="assets/avatar-badge.png" alt="">
+        <span class="tile-label">Online Study Room</span>
+      </div>
+
+      <div class="tile-row">
+        <div class="tile-half" style="background:#6216ff">
+          <img class="tile-half-icon" src="assets/flashcards-icon.png" alt="">
+          <img style="position:absolute;left:78px;top:8px;width:77px;height:90px;object-fit:contain;pointer-events:none" src="assets/flashcards-deco.png" alt="">
+          <span class="tile-half-label">Flashcards</span>
+        </div>
+        <div class="tile-half" style="background:#336cff">
+          <img class="tile-half-icon" src="assets/mock-icon.png" alt="">
+          <img style="position:absolute;left:79px;top:12px;width:77px;height:72px;object-fit:contain;pointer-events:none" src="assets/mock-deco.png" alt="">
+          <span class="tile-half-label">Mock Exercise</span>
+        </div>
+      </div>
+
+      <div class="tile-row">
+        <div class="tile-half" style="overflow:hidden">
+          <img class="tile-half-bg" src="assets/questions-tile-bg.png" alt="">
+          <img class="tile-half-icon" src="assets/questions-icon.png" alt="">
+          <span class="tile-half-label">My Questions</span>
+        </div>
+        <div class="tile-half" style="background:#1bc9c9">
+          <img class="tile-half-bg" src="assets/apquest-tile-bg.png" alt="">
+          <img class="tile-half-icon" src="assets/apquest-icon.png" alt="">
+          <span class="tile-half-label">AP Quest</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item"><img src="assets/tab-camera.png" alt="camera"></div>
+      <div class="tab-item"><img src="assets/tab-chat.png" alt="chat"></div>
+      <div class="tab-item"><img src="assets/tab-tasks.png" alt="tasks"></div>
+      <div class="tab-item" style="position:relative">
+        <div class="tab-active-bar" style="left:50%;transform:translateX(-50%)"></div>
+        <img src="assets/tab-learn.png" alt="learn">
+      </div>
+      <div class="tab-item"><img src="assets/tab-profile.png" alt="profile"></div>
+    </div>
+
+    <div class="home-ind"></div>
+  </div>
+
+
+  <!-- ══════════════════════════
+       SCREEN 2 · STUDY ROOM (room picker)
+  ══════════════════════════ -->
+  <div id="s2" class="screen">
+    <div style="position:absolute;inset:0;background:#161616"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="white"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2.5C5.5 2.5 3.2 3.5 1.5 5.2L0 3.7C2.1 1.4 5 0 8 0s5.9 1.4 8 3.7L14.5 5.2C12.8 3.5 10.5 2.5 8 2.5z"/><path d="M8 6C6.3 6 4.8 6.7 3.7 7.8L2.2 6.3C3.7 4.9 5.7 4 8 4s4.3.9 5.8 2.3L12.3 7.8C11.2 6.7 9.7 6 8 6z"/><circle cx="8" cy="11" r="1.5"/></svg>
+        <div class="battery-border"><div class="battery-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="s2-nav">
+      <img class="s2-back" src="assets/back.png" alt="back" onclick="show('s1')">
+      <span class="s2-title">Study Room</span>
+    </div>
+
+    <div class="s2-stat-row">
+      <div class="s2-stat">
+        <div class="s2-stat-label">Total Focus</div>
+        <div><span class="s2-stat-value" id="totalFocus">0.0</span><span class="s2-stat-unit">h</span></div>
+      </div>
+      <div class="s2-stat">
+        <div class="s2-stat-label">Online People</div>
+        <div><span class="s2-stat-value">1800</span></div>
+      </div>
+    </div>
+
+    <div class="s2-section-label">Pick a study room</div>
+
+    <div class="s2-rooms-scroll" id="roomsScroll">
+      <div class="room-card active" id="room1" onclick="selRoom(this)">
+        <video src="cover video/library.mp4" poster="assets/cover-cozy.png" autoplay loop muted playsinline></video>
+      </div>
+      <div class="room-card" id="room2" onclick="selRoom(this)">
+        <video src="cover video/space.mp4" poster="assets/cover-galaxy.png" autoplay loop muted playsinline></video>
+      </div>
+      <div class="room-card" id="room3" onclick="selRoom(this)">
+        <video src="cover video/Cafe rain.mp4" poster="assets/cover-rainy.png" autoplay loop muted playsinline></video>
+      </div>
+      <div class="room-card" id="room4" onclick="selRoom(this)">
+        <video src="cover video/mushroom.mp4" poster="assets/cover-woodland.png" autoplay loop muted playsinline></video>
+      </div>
+    </div>
+
+    <div class="s2-room-name" id="roomName">Cozy Library</div>
+    <div class="s2-room-meta" id="roomMeta">8 seats &nbsp;·&nbsp; 512 people studying now</div>
+
+    <div class="s2-dots" id="roomDots">
+      <div class="s2-dot active"></div>
+      <div class="s2-dot"></div>
+      <div class="s2-dot"></div>
+      <div class="s2-dot"></div>
+    </div>
+
+    <div class="s2-enter-btn" onclick="enterRoom()">
+      Enter Study Room
+      <img src="assets/arrow-right.png" alt="→">
+    </div>
+
+    <div class="home-ind"></div>
+  </div>
+
+
+  <!-- ══════════════════════════
+       SCREEN 3 · STUDY ROOM (in-room: choose duration → focus)
+  ══════════════════════════ -->
+  <div id="s3" class="screen">
+    <div class="s3-world">
+      <video id="studyVideo" class="s3-bg" autoplay loop muted playsinline></video>
+
+      <!-- empty-seat overlays: cover a desk when that person leaves.
+           Positioned at runtime from Figma still-image coords (see SEATS). -->
+      <div id="seatBlanks">
+        <img class="seat-blank" data-seat="top"        src="assets/blank-top.png" alt="">
+        <img class="seat-blank" data-seat="right-top"  src="assets/blank-right-top.png" alt="">
+        <img class="seat-blank" data-seat="left"       src="assets/blank-left.png" alt="">
+        <img class="seat-blank" data-seat="middle"     src="assets/blank-middle.png" alt="">
+        <img class="seat-blank" data-seat="right"      src="assets/blank-right.png" alt="">
+        <img class="seat-blank" data-seat="down-left"  src="assets/blank-down-left.png" alt="">
+        <img class="seat-blank" data-seat="right-down" src="assets/blank-right-down.png" alt="">
+      </div>
+
+      <!-- avatar tags -->
+      <div class="avatar-tag" data-person="Morgan"  style="top:155px;left:59px;animation-delay:0s"><span class="avatar-name">Morgan</span><span class="avatar-flag">🇨🇳</span><span class="avatar-time">10:42</span></div>
+      <div class="avatar-tag" data-person="Leona"   style="top:262px;left:15px;animation-delay:.5s"><span class="avatar-name">Leona</span><span class="avatar-flag">🇫🇷</span><span class="avatar-time">10:42</span></div>
+      <div class="avatar-tag" data-person="Jasmine" style="top:165px;left:225px;animation-delay:1s"><span class="avatar-name">Jasmine</span><span class="avatar-flag">🇺🇸</span><span class="avatar-time">10:42</span></div>
+      <div class="avatar-tag" data-person="Leo"     style="top:270px;left:251px;animation-delay:1.5s"><span class="avatar-name">Leo</span><span class="avatar-flag">🇧🇷</span><span class="avatar-time">10:42</span></div>
+      <div class="avatar-tag" data-person="Linda"   style="top:440px;left:23px;animation-delay:.8s"><span class="avatar-name">Linda</span><span class="avatar-flag">🇯🇵</span><span class="avatar-time">10:42</span></div>
+      <div class="avatar-tag" data-person="Avery"   style="top:465px;left:265px;animation-delay:2s"><span class="avatar-name">Avery</span><span class="avatar-flag">🇺🇸</span><span class="avatar-time">10:42</span></div>
+      <div class="avatar-tag bella" data-person="Bella" style="top:554px;left:170px;animation-delay:2.4s"><span class="avatar-name" id="bellaTag">Bella</span><span class="avatar-flag">🇺🇸</span><span class="avatar-time">10:42</span></div>
+    </div>
+
+    <audio id="studyAudio" loop></audio>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="white"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2.5C5.5 2.5 3.2 3.5 1.5 5.2L0 3.7C2.1 1.4 5 0 8 0s5.9 1.4 8 3.7L14.5 5.2C12.8 3.5 10.5 2.5 8 2.5z"/><path d="M8 6C6.3 6 4.8 6.7 3.7 7.8L2.2 6.3C3.7 4.9 5.7 4 8 4s4.3.9 5.8 2.3L12.3 7.8C11.2 6.7 9.7 6 8 6z"/><circle cx="8" cy="11" r="1.5"/></svg>
+        <div class="battery-border"><div class="battery-fill"></div></div>
+      </div>
+    </div>
+
+    <!-- blur veil (choosing state only) -->
+    <div class="s3-blur-veil"></div>
+
+    <!-- back (choosing state only) -->
+    <img class="s3-back" src="assets/back.png" alt="back" onclick="leaveRoom()">
+
+    <!-- activity feed -->
+    <div class="s3-feed" id="feed"></div>
+
+    <div class="s3-dark-overlay"></div>
+
+    <div class="s3-timer">
+      <img src="assets/timer-ring.svg" alt="timer">
+    </div>
+    <div class="s3-timer-text">
+      <span class="s3-timer-mins" id="timerLeft">25:00</span>
+      <span class="s3-timer-left">left</span>
+    </div>
+
+    <div class="s3-focus-label">Focusing...</div>
+    <div class="s3-focus-sub"><span id="focusedSoFar">0:00 focused</span><span id="focusTotal">25min total</span></div>
+
+    <div class="s3-giveup" onclick="openGiveUp()">Give Up</div>
+    <div class="s3-done" onclick="finishSession()">Done</div>
+
+    <!-- focus duration sheet (choosing state) -->
+    <div class="s3-sheet">
+      <div class="sheet-label">Focus Duration</div>
+      <div class="sheet-dur-row">
+        <div class="dur-card sel" data-mins="25" onclick="selDur(this)">
+          <span class="dur-emoji">🍅</span>
+          <span class="dur-mins">25 <span>min</span></span>
+          <span class="dur-name">Pomodoro</span>
+        </div>
+        <div class="dur-card" data-mins="45" onclick="selDur(this)">
+          <span class="dur-emoji">☕️</span>
+          <span class="dur-mins">45 <span>min</span></span>
+          <span class="dur-name">Deep Focus</span>
+        </div>
+        <div class="dur-card" data-mins="60" onclick="selDur(this)">
+          <span class="dur-emoji">🏆</span>
+          <span class="dur-mins">60 <span>min</span></span>
+          <span class="dur-name">Marathon</span>
+        </div>
+      </div>
+      <div class="sheet-custom">⏱️ <input id="customMins" type="text" inputmode="numeric" placeholder="Custom minutes" oninput="customDur(this)"></div>
+      <div class="sheet-name-label">Your Name</div>
+      <input class="sheet-name-field" id="nameField" type="text" value="Bella" placeholder="Your name">
+      <div class="sheet-start-btn" onclick="startFocus()">Start focus</div>
+    </div>
+
+    <div class="home-ind" style="z-index:110"></div>
+
+    <!-- give up popup -->
+    <div class="s3-popup-layer" id="giveupPopup">
+      <div class="s3-popup-backdrop" onclick="closeGiveUp()"></div>
+      <div class="s3-popup-sheet"></div>
+      <img class="s3-popup-mascot" src="assets/mascot-peek.png" alt="">
+      <div class="s3-popup-title">Give up this session?</div>
+      <div class="s3-popup-sub">You won't earn a reward if you quit now.</div>
+      <div class="s3-popup-btns">
+        <div class="s3-popup-btn s3-popup-keep" onclick="closeGiveUp()">Keep Going</div>
+        <div class="s3-popup-btn s3-popup-quit" onclick="quitSession()">Quit</div>
+      </div>
+      <div class="home-ind"></div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════
+       SCREEN 4 · SESSION COMPLETE
+  ══════════════════════════ -->
+  <div id="s4" class="screen">
+    <div style="position:absolute;inset:0;background:#0c0c0c"></div>
+
+    <div class="status-bar">
+      <span class="status-time">9:41</span>
+      <div class="status-icons">
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="white"><rect x="0" y="3" width="3" height="9" rx="1"/><rect x="4.5" y="2" width="3" height="10" rx="1"/><rect x="9" y="1" width="3" height="11" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2.5C5.5 2.5 3.2 3.5 1.5 5.2L0 3.7C2.1 1.4 5 0 8 0s5.9 1.4 8 3.7L14.5 5.2C12.8 3.5 10.5 2.5 8 2.5z"/><path d="M8 6C6.3 6 4.8 6.7 3.7 7.8L2.2 6.3C3.7 4.9 5.7 4 8 4s4.3.9 5.8 2.3L12.3 7.8C11.2 6.7 9.7 6 8 6z"/><circle cx="8" cy="11" r="1.5"/></svg>
+        <div class="battery-border"><div class="battery-fill"></div></div>
+      </div>
+    </div>
+
+    <div id="celebLottie" class="s4-celebration"></div>
+    <div class="s4-shadow"></div>
+    <div id="charsLottie" class="s4-chars"></div>
+
+    <div class="s4-text">
+      <div class="s4-title">Session Complete!</div>
+      <div class="s4-sub" id="s4Sub">Amazing work, Bella!</div>
+    </div>
+
+    <div class="s4-stats">
+      <div class="s4-stat-box">
+        <div class="s4-stat-header" style="background:url(assets/stat-header-focused.png) center/100% 100% no-repeat">
+          <span style="position:relative;z-index:1">Focused</span>
+        </div>
+        <div class="s4-stat-value" id="statFocused">25:06</div>
+      </div>
+      <div class="s4-stat-box">
+        <div class="s4-stat-header" style="background:url(assets/stat-header-goal.png) center/100% 100% no-repeat">
+          <span style="position:relative;z-index:1">Goal</span>
+        </div>
+        <div class="s4-stat-value" id="statGoal">25min</div>
+      </div>
+    </div>
+
+    <div class="s4-exit" onclick="show('s1')">Exit Study Room</div>
+
+    <div class="home-ind"></div>
+
+    <!-- awards overlay -->
+    <div class="awards" id="awards">
+      <div class="awards-title">Congratulations!</div>
+      <div class="awards-sub" id="awardSub">You got it!  keep going!️</div>
+      <div class="awards-rays"></div>
+      <img class="awards-item" id="awardImg" src="assets/award-hat.png" alt="">
+      <div class="awards-name" id="awardName">Sailor Hat</div>
+      <div class="awards-thanks" onclick="closeAwards()">Thanks</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="assets/lottie.min.js"></script>
+<script>
+const ROOMS = {
+  room1: { name: 'Cozy Library',       people: 512, video: 'study video/Cozy Library.mp4',        audio: 'study video/cozy library.MP3',        poster: 'assets/cover-cozy.png' },
+  room2: { name: 'Galaxy Reading Room', people: 486, video: 'study video/Galaxy Reading Room.mp4', audio: 'study video/Galaxy Reading Room.MP3', poster: 'assets/cover-galaxy.png' },
+  room3: { name: 'Rainy Day Library',  people: 608, video: 'study video/Rainy Day Library.mp4',   audio: 'study video/Rainy Day Library.MP3',   poster: 'assets/cover-rainy.png' },
+  room4: { name: 'Cozy Woodland Room', people: 194, video: 'study video/Cozy Woodland Room.mp4',  audio: 'study video/Cozy Woodland Room.MP3',  poster: 'assets/cover-woodland.png' },
+};
+const ROOM_IDS = ['room1', 'room2', 'room3', 'room4'];
+const AWARDS = [
+  { img: 'assets/award-hat.png',       w: 220, top: 340, name: 'Sailor Hat', sub: 'You got it!  keep going!️' },
+  { img: 'assets/award-lightning.svg', w: 180, top: 315, name: 'X 2',        sub: 'You got 2 ⚡! keep going!️' },
+];
+const FEED_MSGS = [
+  'Liam 🇪🇸 just finished his 10min focus',
+  'Teddy 🇪🇸 just finished his 40min focus',
+  'Kitty 🇺🇸 just joined the study room',
+  'Mary 🇺🇸 joined the study room',
+  'Jasmine 🇺🇸 is on a 7-day focus streak',
+  'Leo 🇧🇷 just finished his 25min focus',
+  'Avery 🇺🇸 just joined the study room',
+];
+/* Empty-seat patches. Coordinates come from the Figma "cozy library bg" frame
+   (803:8806), which lays the patches out over the 375x667 still of the room.
+   The app shows the animated version of that same still, scaled with
+   object-fit:cover into 375x812 — layoutSeats() maps between the two. */
+const ROOM_TOP = -82;              // where the room still/video starts on screen
+const SEAT_W = 98, SEAT_H = 141;
+/* bx/by = empty-seat patch, tx/ty = that person's name tag — both in still
+   coords. In the Figma frame every tag sits ~20px above-left of its own desk,
+   which is what pairs a person to a seat. */
+const SEATS = [
+  { seat: 'top',        person: 'Morgan',  bx: 124, by: 146, tx: 103, ty: 122 },
+  { seat: 'right-top',  person: 'Jasmine', bx: 222, by: 220, tx: 204, ty: 194 },
+  { seat: 'left',       person: 'Leona',   bx:  34, by: 234, tx:  19, ty: 207 },
+  { seat: 'middle',     person: 'Leo',     bx: 126, by: 305, tx: 104, ty: 273 },
+  { seat: 'right',      person: 'Linda',   bx: 252, by: 337, tx: 231, ty: 306 },
+  { seat: 'down-left',  person: 'Avery',   bx:  36, by: 394, tx:  19, ty: 364 },
+  { seat: 'right-down', person: 'Bella',   bx: 150, by: 442, tx: 143, ty: 417 },
+];
+const SEAT_OF = {};
+SEATS.forEach(s => { SEAT_OF[s.person] = s.seat; });
+let leftRoom = new Set();
+let leaveId = null;
+
+let currentRoom = 'room1';
+let durationMins = 25;
+let finishAnim = null;
+let celebAnim = null;
+let timerId = null;
+let feedId = null;
+let feedIdx = 0;
+let feedLines = [];
+let secondsLeft = 0;
+let secondsFocused = 0;
+let totalFocusedH = 0;
+let awardCount = 0;
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+
+  if (id === 's4') {
+    if (!finishAnim) {
+      finishAnim = lottie.loadAnimation({
+        container: document.getElementById('charsLottie'),
+        renderer: 'svg', loop: true, autoplay: true,
+        path: 'assets/greeting-anim.json'
+      });
+      celebAnim = lottie.loadAnimation({
+        container: document.getElementById('celebLottie'),
+        renderer: 'svg', loop: true, autoplay: true,
+        path: 'assets/celebration-anim.json'
+      });
+    } else {
+      finishAnim.goToAndPlay(0);
+      celebAnim.goToAndPlay(0);
+    }
+  } else {
+    if (finishAnim) finishAnim.pause();
+    if (celebAnim) celebAnim.pause();
+  }
+
+  const video = document.getElementById('studyVideo');
+  const audio = document.getElementById('studyAudio');
+  if (id !== 's3') {
+    video.pause(); video.removeAttribute('src'); video.load();
+    audio.pause(); audio.removeAttribute('src');
+    clearInterval(feedId);
+    clearInterval(leaveId);
+  }
+}
+
+/* ── S2 carousel ── */
+const CARD_STEP = 306 + 16;
+
+function setActiveRoom(i) {
+  currentRoom = ROOM_IDS[i];
+  const rm = ROOMS[currentRoom];
+  document.querySelectorAll('.room-card').forEach((c, k) => c.classList.toggle('active', k === i));
+  document.querySelectorAll('.s2-dot').forEach((d, k) => d.classList.toggle('active', k === i));
+  document.getElementById('roomName').textContent = rm.name;
+  document.getElementById('roomMeta').innerHTML = '8 seats &nbsp;·&nbsp; ' + rm.people + ' people studying now';
+}
+
+function selRoom(el) {
+  const i = ROOM_IDS.indexOf(el.id);
+  document.getElementById('roomsScroll').scrollTo({ left: i * CARD_STEP, behavior: 'smooth' });
+  setActiveRoom(i);
+}
+
+/* ── S2 → S3: enter room (choosing state) ── */
+function enterRoom() {
+  const s3 = document.getElementById('s3');
+  s3.classList.add('choosing');
+  show('s3');
+
+  resetSeats();
+  const rm = ROOMS[currentRoom];
+  const video = document.getElementById('studyVideo');
+  video.poster = rm.poster;
+  video.src = rm.video;
+  video.load();
+  video.play().catch(() => {});
+  video.addEventListener('loadedmetadata', layoutSeats, { once: true });
+  layoutSeats();
+}
+
+function leaveRoom() {
+  document.getElementById('s3').classList.remove('choosing');
+  show('s2');
+}
+
+/* ── start focus ── */
+function startFocus() {
+  const name = document.getElementById('nameField').value.trim() || 'Bella';
+  document.getElementById('bellaTag').textContent = name;
+  document.getElementById('s4Sub').textContent = 'Amazing work, ' + name + '!';
+
+  document.getElementById('s3').classList.remove('choosing');
+
+  const rm = ROOMS[currentRoom];
+  document.getElementById('studyVideo').play().catch(() => {});
+  const audio = document.getElementById('studyAudio');
+  audio.src = rm.audio;
+  audio.volume = 0.5;
+  audio.load();
+  audio.play().catch(() => {});
+
+  secondsLeft = durationMins * 60;
+  secondsFocused = 0;
+  document.getElementById('focusTotal').textContent = durationMins + 'min total';
+  updateTimerUI();
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    secondsLeft--;
+    secondsFocused++;
+    if (secondsLeft <= 0) { finishSession(); return; }
+    updateTimerUI();
+  }, 1000);
+
+  startFeed();
+  startComings();
+}
+
+/* ── empty-seat patches ── */
+function layoutSeats() {
+  SEATS.forEach(s => {
+    const el = document.querySelector(`.seat-blank[data-seat="${s.seat}"]`);
+    if (el) {
+      el.style.left   = s.bx + 'px';
+      el.style.top    = (s.by + ROOM_TOP) + 'px';
+      el.style.width  = SEAT_W + 'px';
+      el.style.height = SEAT_H + 'px';
+    }
+    // keep each name tag pinned to its own desk
+    const tag = document.querySelector(`.avatar-tag[data-person="${s.person}"]`);
+    if (tag) {
+      tag.style.left = s.tx + 'px';
+      tag.style.top  = (s.ty + ROOM_TOP) + 'px';
+    }
+  });
+  return true;
+}
+
+/* The empty-desk art is cut from the Cozy Library still, so the overlay only
+   applies there; other rooms just lose the name tag. */
+function seatArtAvailable() { return currentRoom === 'room1'; }
+
+function personLeaves(name) {
+  if (leftRoom.has(name)) return;
+  leftRoom.add(name);
+  const tag = document.querySelector(`.avatar-tag[data-person="${name}"]`);
+  if (tag) tag.classList.add('left-room');
+  const seat = seatArtAvailable() ? SEAT_OF[name] : null;
+  if (seat) {
+    const blank = document.querySelector(`.seat-blank[data-seat="${seat}"]`);
+    if (blank) blank.classList.add('gone');
+  }
+  pushFeed(name + ' left the study room');
+}
+
+function personReturns(name) {
+  if (!leftRoom.has(name)) return;
+  leftRoom.delete(name);
+  const tag = document.querySelector(`.avatar-tag[data-person="${name}"]`);
+  if (tag) tag.classList.remove('left-room');
+  const seat = SEAT_OF[name];
+  if (seat) {
+    const blank = document.querySelector(`.seat-blank[data-seat="${seat}"]`);
+    if (blank) blank.classList.remove('gone');
+  }
+  pushFeed(name + ' joined the study room');
+}
+
+function togglePerson(name) {
+  leftRoom.has(name) ? personReturns(name) : personLeaves(name);
+}
+
+function resetSeats() {
+  Array.from(leftRoom).forEach(personReturns);
+  clearInterval(leaveId);
+}
+
+/* people drift in and out while you focus */
+function startComings() {
+  clearInterval(leaveId);
+  const others = Array.from(document.querySelectorAll('.avatar-tag[data-person]'))
+    .map(t => t.dataset.person)
+    .filter(n => n !== 'Bella');
+  leaveId = setInterval(() => {
+    const here = others.filter(n => !leftRoom.has(n));
+    const away = others.filter(n => leftRoom.has(n));
+    // keep at least half the room occupied, otherwise bring someone back
+    if (away.length >= 3 || (away.length && here.length <= 2)) {
+      personReturns(away[Math.floor(Math.random() * away.length)]);
+    } else if (here.length) {
+      personLeaves(here[Math.floor(Math.random() * here.length)]);
+    }
+  }, 7000);
+}
+
+/* ── activity feed — a rolling log, newest line at the bottom ── */
+function pushFeed(msg) {
+  feedLines.push(msg);
+  if (feedLines.length > 20) feedLines.shift();
+  renderFeed();
+}
+
+function renderFeed() {
+  const feed = document.getElementById('feed');
+  feed.innerHTML = '';
+  const shown = feedLines.slice(-3);
+  const OPACITY = [.3, .6, 1];
+  shown.forEach((msg, k) => {
+    const div = document.createElement('div');
+    div.textContent = msg;
+    div.style.opacity = OPACITY[OPACITY.length - shown.length + k];
+    feed.appendChild(div);
+  });
+}
+
+function startFeed() {
+  feedLines = FEED_MSGS.slice(0, 3);
+  feedIdx = 3;
+  renderFeed();
+  clearInterval(feedId);
+  feedId = setInterval(() => {
+    pushFeed(FEED_MSGS[feedIdx % FEED_MSGS.length]);
+    feedIdx++;
+  }, 3000);
+}
+
+function selDur(el) {
+  document.querySelectorAll('.dur-card').forEach(d => d.classList.remove('sel'));
+  el.classList.add('sel');
+  durationMins = parseInt(el.dataset.mins, 10);
+  document.getElementById('customMins').value = '';
+}
+
+function customDur(input) {
+  const v = parseInt(input.value, 10);
+  if (v > 0) {
+    durationMins = Math.min(v, 600);
+    document.querySelectorAll('.dur-card').forEach(d => d.classList.remove('sel'));
+  }
+}
+
+function fmt(sec) {
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return m + ':' + String(s).padStart(2, '0');
+}
+
+function updateTimerUI() {
+  document.getElementById('timerLeft').textContent = fmt(secondsLeft);
+  document.getElementById('focusedSoFar').textContent = fmt(secondsFocused) + ' focused';
+}
+
+function openGiveUp() { document.getElementById('giveupPopup').classList.add('show'); }
+function closeGiveUp() { document.getElementById('giveupPopup').classList.remove('show'); }
+
+function quitSession() {
+  clearInterval(timerId);
+  closeGiveUp();
+  show('s2');
+}
+
+function finishSession() {
+  clearInterval(timerId);
+  document.getElementById('statFocused').textContent = fmt(secondsFocused);
+  document.getElementById('statGoal').textContent = durationMins + 'min';
+  totalFocusedH += secondsFocused / 3600;
+  document.getElementById('totalFocus').textContent = totalFocusedH.toFixed(1);
+  show('s4');
+
+  const a = AWARDS[awardCount % AWARDS.length];
+  awardCount++;
+  const img = document.getElementById('awardImg');
+  img.src = a.img;
+  img.style.width = a.w + 'px';
+  img.style.top = a.top + 'px';
+  document.getElementById('awardName').textContent = a.name;
+  document.getElementById('awardSub').textContent = a.sub;
+  setTimeout(() => {
+    if (document.getElementById('s4').classList.contains('active')) {
+      document.getElementById('awards').classList.add('show');
+    }
+  }, 1400);
+}
+
+function closeAwards() { document.getElementById('awards').classList.remove('show'); }
+
+// Tap a name tag to make that person leave (tap again to bring them back)
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.avatar-tag[data-person]').forEach(tag => {
+    tag.addEventListener('click', () => togglePerson(tag.dataset.person));
+  });
+  window.addEventListener('resize', layoutSeats);
+});
+
+// Preload display fonts so screen 4 never flashes fallback type
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load('700 32px "Baloo 2"');
+    document.fonts.load('500 16px Poppins');
+    document.fonts.load('700 16px Poppins');
+  }
+});
+
+// Carousel: drag-to-scroll + sync active card on scroll
+document.addEventListener('DOMContentLoaded', function() {
+  const scroll = document.getElementById('roomsScroll');
+  let isDown = false, startX = 0, scrollLeft = 0, hasDragged = false;
+
+  scroll.addEventListener('mousedown', function(e) {
+    isDown = true;
+    hasDragged = false;
+    startX = e.clientX;
+    scrollLeft = scroll.scrollLeft;
+    scroll.style.cursor = 'grabbing';
+    scroll.style.scrollSnapType = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!isDown) return;
+    isDown = false;
+    scroll.style.cursor = 'grab';
+    scroll.style.scrollSnapType = 'x mandatory';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isDown) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 3) hasDragged = true;
+    scroll.scrollLeft = scrollLeft - dx;
+  });
+
+  scroll.addEventListener('click', function(e) {
+    if (hasDragged) {
+      e.stopPropagation();
+      hasDragged = false;
+    }
+  }, true);
+
+  scroll.addEventListener('scroll', function() {
+    const i = Math.max(0, Math.min(ROOM_IDS.length - 1, Math.round(scroll.scrollLeft / CARD_STEP)));
+    if (ROOM_IDS[i] !== currentRoom) setActiveRoom(i);
+  });
+});
+</script>
+
+</body>
+</html>
