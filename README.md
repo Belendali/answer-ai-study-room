@@ -1,11 +1,11 @@
-# Answer AI — Online Study Room
+# Online Study Room
 
-Clickable prototype of the Answer AI study-room flow. Single self-contained page —
+Clickable prototype of the study-room flow. Single self-contained page —
 no build step, no dependencies.
 
-**▶️ Live demo: <https://belendali.github.io/answer-ai-study-room/>**
+**▶️ Live demo: <https://belendali.github.io/study-room-prototype/>**
 
-Design source: [📱 ANSWER AI UI app](https://www.figma.com/design/HjtuqIuyQFAMiGywZqqU4P/%F0%9F%93%B1-ANSWER-AI-UI-app?node-id=57-2381)
+Design source: [the Figma file](https://www.figma.com/design/HjtuqIuyQFAMiGywZqqU4P/?node-id=57-2381)
 — section `07/2026`. Frames worth knowing:
 
 | Frame | Node | What |
