@@ -1,7 +1,24 @@
 # Answer AI — Online Study Room
 
-Clickable prototype of the Answer AI study-room flow, built from the Figma file
-*📱 ANSWER AI UI app* (section `07/2026`). Single self-contained page — no build step.
+Clickable prototype of the Answer AI study-room flow. Single self-contained page —
+no build step, no dependencies.
+
+**▶️ Live demo: <https://belendali.github.io/answer-ai-study-room/>**
+
+Design source: [📱 ANSWER AI UI app](https://www.figma.com/design/HjtuqIuyQFAMiGywZqqU4P/%F0%9F%93%B1-ANSWER-AI-UI-app?node-id=57-2381)
+— section `07/2026`. Frames worth knowing:
+
+| Frame | Node | What |
+| --- | --- | --- |
+| `study room` | `57:2496` | Room picker — stats, carousel, dots |
+| `Cozy library` | `57:2660` | Duration half-sheet over the blurred room |
+| `Cozy library` | `62:2723` | Focusing state — name tags, activity feed |
+| `giveup` | `62:2851` | Give-up confirm sheet |
+| `cozy library bg` | `803:8806` | **Empty-seat patch positions** |
+
+> This is a design prototype, not production code: one HTML file, positions
+> hardcoded from the design, fake data and timers. Treat it as an executable
+> spec for layout, motion and interaction — not as a starting codebase.
 
 ## Run it
 
@@ -39,6 +56,15 @@ desk — that offset is what pairs a person to a seat.
 
 The cut-outs are traced from the Cozy Library artwork, so the overlay only
 applies to that room; elsewhere a leaver just loses their tag.
+
+## Known gaps
+
+- Name-tag positions are the Cozy Library set for **all four rooms**, so tags do
+  not line up with the characters in Galaxy / Rainy / Woodland. The design has
+  per-room coordinates (`57:2820`, `57:2880`).
+- Empty-seat cut-outs exist for Cozy Library only.
+- Who leaves and when is faked on a 7s timer; tapping a name tag toggles that
+  person on demand (handy for demoing).
 
 ## Layout
 
